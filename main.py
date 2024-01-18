@@ -15,7 +15,8 @@ urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/7203909b-2067-f5eb-97cd-3efeb6944857",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-b4ae-0cd6d5eaa5c6",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/3f6d7273-81ed-d773-8cac-1dcddcbcc595",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f"]
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f",
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/eceef673-9e85-bb15-3b6a-d8e42195a8a0"]
 directory_base = "/opt/ponip_pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
@@ -62,10 +63,6 @@ def parse_html(html_input):
     data = {}
     vrijednosti_lijevo = html_input.css(".main-container [role='main'] .row div p.text-right")
     for vrijednost in vrijednosti_lijevo:
-        # 'Ostali uvjeti prodaje' su u divu umjesto u p :(
-        if vrijednost.text(strip=True) == "Ostali uvjeti prodaje":
-            ostali_uvjeti = vrijednost.parent.parent.css("div:nth-child(2)")
-            data[f"{vrijednost.text(strip=True)}"] = ostali_uvjeti[0].text(strip=True)
         podaci_desno = vrijednost.parent.parent.css("div:nth-child(2) > p")
         for podatak in podaci_desno:
             if podatak.text(strip=True) == "":
@@ -79,6 +76,14 @@ def parse_html(html_input):
                         # data["Napomena 2"] = podatak.text(strip=True)
                         pass
                 data[f"{vrijednost.text(strip=True)}"] = podatak.text(strip=True)
+
+        # 'Ostali uvjeti prodaje' su u divu umjesto u p :(
+        if vrijednost.text(strip=True) == "Ostali uvjeti prodaje":
+            ostali_uvjeti = vrijednost.parent.parent.css("div:nth-child(2)")
+            data[f"{vrijednost.text(strip=True)}"] = ostali_uvjeti[0].text(strip=True)
+        if vrijednost.text(strip=True) == "Trenutačna cijena predmeta prodaje u nadmetanju":
+            trenutacna_cijena = vrijednost.parent.parent.css("p#trenutna-cijena")
+            data[f"{vrijednost.text(strip=True)}"] = trenutacna_cijena[0].text(strip=True)
 
     return data
 
