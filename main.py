@@ -10,13 +10,11 @@ from deepdiff import DeepDiff
 from selectolax.parser import HTMLParser
 
 urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-b4ae-0cd6d5eaa5c6",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/88ab522a-bc31-a67f-349d-e75be1dc9438",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/01b71115-59b9-da56-4f9e-3e278d882bc0",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/7203909b-2067-f5eb-97cd-3efeb6944857",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-b4ae-0cd6d5eaa5c6",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/3f6d7273-81ed-d773-8cac-1dcddcbcc595",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/eceef673-9e85-bb15-3b6a-d8e42195a8a0"]
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9ed6c068-c2cd-8ae1-2af9-f7280e9d91df"]
 directory_base = "/opt/ponip_pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
