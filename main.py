@@ -3,6 +3,7 @@
 import csv
 import hashlib
 import json
+import os
 from datetime import datetime
 
 import requests
@@ -15,7 +16,7 @@ urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/3f6d7273-81ed-d773-8cac-1dcddcbcc595",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9ed6c068-c2cd-8ae1-2af9-f7280e9d91df"]
-directory_base = "/opt/ponip_pickler/"
+directory_base = ""  #"/opt/ponip_pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
 
@@ -117,18 +118,23 @@ def main():
 
         novi_podaci = parse_html(html)
         current_id = novi_podaci["ID nadmetanja"]
-        postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
 
-        if bool(novi_podaci):
-            if current_id in postojeci_podaci[1]:
-                # Vrati originalni dictionary
-                originalni_dict = unpack_csv_row(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv",
-                                                 id_nadmetanja=current_id)
-                changes = compare_hashes(hash_new=novi_podaci, hash_old=originalni_dict)
-                if bool(changes):
-                    send_to_telegram(
-                        f"Promjene na promatranoj nekretnini:\n\n{changes}")
-                    print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
+        # check if file exists:
+        if os.path.isfile(f"{CSV_FILE_NAME}_{current_id}.csv"):
+            # compare data
+            postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
+            if bool(novi_podaci):
+                if current_id in postojeci_podaci[1]:
+                    # Vrati originalni dictionary
+                    originalni_dict = unpack_csv_row(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv",
+                                                     id_nadmetanja=current_id)
+                    changes = compare_hashes(hash_new=novi_podaci, hash_old=originalni_dict)
+                    if bool(changes):
+                        send_to_telegram(
+                            f"Promjene na promatranoj nekretnini:\n\n{changes}")
+                        print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
+        else:
+            send_to_telegram(f"New file added: {current_id}")
 
         write_to_csv(novi_podaci, id_nad=current_id)
 
