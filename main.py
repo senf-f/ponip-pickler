@@ -84,6 +84,9 @@ def parse_html(html_input):
         if vrijednost.text(strip=True) == "Trenutačna cijena predmeta prodaje u nadmetanju":
             trenutacna_cijena = vrijednost.parent.parent.css("p#trenutna-cijena")
             data[f"{vrijednost.text(strip=True)}"] = trenutacna_cijena[0].text(strip=True)
+        if vrijednost.text(strip=True) == "Iznos najviše ponude u nadmetanju":
+            trenutacna_cijena = vrijednost.parent.parent.css("p#trenutna-cijena")
+            data[f"{vrijednost.text(strip=True)}"] = trenutacna_cijena[0].text(strip=True)
 
     return data
 
@@ -114,21 +117,23 @@ def main():
         raw = get_html(url)
         html = HTMLParser(raw)
 
-        postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}.csv")
         novi_podaci = parse_html(html)
+        current_id = novi_podaci["ID nadmetanja"]
+        postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
 
-        for i in range(0, len(postojeci_podaci) - 1):
-            if bool(novi_podaci):
-                if novi_podaci["ID nadmetanja"] in postojeci_podaci[i]:
-                    # Vrati originalni dictionary
-                    originalni_dict = unpack_csv_row(csv_file=f"{CSV_FILE_NAME}.csv",
-                                                     id_nadmetanja=novi_podaci["ID nadmetanja"])
-                    if bool(compare_hashes(hash_new=novi_podaci, hash_old=originalni_dict)):
-                        send_to_telegram(
-                            f"Promjene na promatranoj nekretnini:\n\n{compare_hashes(novi_podaci, originalni_dict)}")
-                        print(f"Sent smt to telegram, {datetime.today()}")
+        if bool(novi_podaci):
+            if current_id in postojeci_podaci[1]:
+                # Vrati originalni dictionary
+                originalni_dict = unpack_csv_row(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv",
+                                                 id_nadmetanja=current_id)
+                changes = compare_hashes(hash_new=novi_podaci, hash_old=originalni_dict)
+                if bool(changes):
+                    send_to_telegram(
+                        f"Promjene na promatranoj nekretnini:\n\n{changes}")
+                    print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
 
-        write_to_csv(novi_podaci, id_nad=novi_podaci["ID nadmetanja"])
+        write_to_csv(novi_podaci, id_nad=current_id)
+        print(f"Write {current_id}")
 
 
 if __name__ == '__main__':
