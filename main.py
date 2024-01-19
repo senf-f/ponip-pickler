@@ -133,7 +133,6 @@ def main():
                     print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
 
         write_to_csv(novi_podaci, id_nad=current_id)
-        print(f"Write {current_id}")
 
 
 if __name__ == '__main__':
