@@ -95,7 +95,7 @@ def hash_data(json_input):
 
 
 def compare_hashes(hash_new, hash_old):
-    return DeepDiff(hash_new, hash_old)
+    return DeepDiff(t1=hash_new, t2=hash_old)
 
 
 def send_to_telegram(content):
