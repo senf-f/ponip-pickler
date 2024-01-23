@@ -131,7 +131,7 @@ def main():
                     changes = compare_hashes(hash_new=novi_podaci, hash_old=originalni_dict)
                     if bool(changes):
                         send_to_telegram(
-                            f"Promjene na promatranoj nekretnini:\n\n{changes}")
+                            f"Promjene na promatranoj nekretnini (ID {current_id}):\n\n{changes}")
                         print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
         else:
             send_to_telegram(f"New file added: {current_id}")
