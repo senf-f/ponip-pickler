@@ -17,7 +17,11 @@ urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9ed6c068-c2cd-8ae1-2af9-f7280e9d91df",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/fade13f5-df9e-ad6d-0837-5ea6fbbd192c",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/85127244-04e7-3e8b-52cf-fa1596024337"]
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/85127244-04e7-3e8b-52cf-fa1596024337",
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/89453c2e-7d2f-a390-50ec-672a4a1ffeb3",
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/65d00642-341d-eb49-351d-afa85508466b", 
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/2575018a-8af4-d0a8-53a6-def2d50d0fdb",
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/8b51d74a-2f2f-9289-6d7f-1afeed18f60a"]
 directory_base = ""  #"/opt/ponip_pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
