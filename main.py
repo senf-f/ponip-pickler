@@ -4,6 +4,8 @@ import csv
 import hashlib
 import json
 import os
+import sys
+import traceback
 from datetime import datetime
 
 import requests
@@ -20,7 +22,6 @@ urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/85127244-04e7-3e8b-52cf-fa1596024337",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/89453c2e-7d2f-a390-50ec-672a4a1ffeb3",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/65d00642-341d-eb49-351d-afa85508466b", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/2575018a-8af4-d0a8-53a6-def2d50d0fdb",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/8b51d74a-2f2f-9289-6d7f-1afeed18f60a",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/0647ff73-54a0-5d9d-e5c5-4bff327566b9",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/ba6180cb-df26-45db-e8e4-109ca63267c4"]
@@ -115,8 +116,8 @@ def send_to_telegram(content):
 
     try:
         requests.post(api_url, json={'chat_id': chat_id, 'text': content})
-    except Exception as e:
-        print(e)
+    except Exception as exception:
+        print(exception)
 
 
 def main():
@@ -125,7 +126,10 @@ def main():
         html = HTMLParser(raw)
 
         novi_podaci = parse_html(html)
-        current_id = novi_podaci["ID nadmetanja"]
+        if "ID nadmetanja" in novi_podaci:
+            current_id = novi_podaci["ID nadmetanja"]
+        else:
+            print("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
 
         # check if file exists:
         if os.path.isfile(f"{CSV_FILE_NAME}_{current_id}.csv"):
@@ -148,5 +152,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    print(f"Program executed, {datetime.today()}.")
+    try:
+        main()
+    except Exception as e:
+        print(e.args)
+        send_to_telegram(f">>> ERROR: {e.args}")
+    finally:
+        print(f"Program executed, {datetime.today()}.")
