@@ -65,6 +65,8 @@ def unpack_csv_row(csv_file, id_nadmetanja):
 
 def get_html(url):
     r = requests.get(url)
+    if r.status_code != 200:
+        r.raise_for_status()
     return r.text
 
 
@@ -129,6 +131,7 @@ def main():
         novi_podaci = parse_html(html)
         if "ID nadmetanja" in novi_podaci:
             current_id = novi_podaci["ID nadmetanja"]
+            print(current_id)
         else:
             print("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
 
