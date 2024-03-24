@@ -14,7 +14,6 @@ from selectolax.parser import HTMLParser
 
 urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-b4ae-0cd6d5eaa5c6",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/7203909b-2067-f5eb-97cd-3efeb6944857",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/035d3e38-bd9e-6bf1-b4ae-0cd6d5eaa5c6",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/3f6d7273-81ed-d773-8cac-1dcddcbcc595",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/cf97100c-4244-7eb8-eca9-022bb82a949f",
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9ed6c068-c2cd-8ae1-2af9-f7280e9d91df",
@@ -131,7 +130,7 @@ def main():
         novi_podaci = parse_html(html)
         if "ID nadmetanja" in novi_podaci:
             current_id = novi_podaci["ID nadmetanja"]
-            print(current_id)
+            #print(current_id)
         else:
             print("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
 
