@@ -12,14 +12,14 @@ from deepdiff import DeepDiff
 from selectolax.parser import HTMLParser
 
 
-directory_base = ""  #"/opt/ponip_pickler/"
+CWD = ""  #"/opt/ponip_pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
 
 
 def write_to_csv(data, id_nad=""):
     data_hash = hash_data(data)
-    csv_file_path = f"{directory_base}{CSV_FILE_NAME}_{id_nad}.csv"
+    csv_file_path = f"{CWD}{CSV_FILE_NAME}_{id_nad}.csv"
     with open(csv_file_path, 'w+', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=list(data.keys()) + DODANE_INFORMACIJE)
         if file.tell() == 0:
@@ -29,13 +29,13 @@ def write_to_csv(data, id_nad=""):
 
 
 def read_from_csv(csv_file):
-    with open(f"{directory_base}{csv_file}", encoding="utf-8") as f:
+    with open(f"{CWD}{csv_file}", encoding="utf-8") as f:
         zapisi = f.read().splitlines()
     return zapisi
 
 
 def unpack_csv_row(csv_file, id_nadmetanja):
-    with open(f"{directory_base}{csv_file}", "r", encoding="utf-8") as f:
+    with open(f"{CWD}{csv_file}", "r", encoding="utf-8") as f:
 
         reader = csv.DictReader(f)
         keys_list = [key for key in reader.fieldnames if key not in DODANE_INFORMACIJE]
