@@ -146,6 +146,6 @@ if __name__ == '__main__':
         main()
     except Exception as e:
         print(e.args)
-        send_to_telegram(f">>> ERROR: {e.args}")
+        send_to_telegram(f">>> ERROR: {e.args}\n (Ponip Pickler)")
     finally:
         print(f"Program executed, {datetime.today()}.")
