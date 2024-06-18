@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import os
+import traceback
 from datetime import datetime
 from config import urls
 
@@ -106,7 +107,8 @@ def send_to_telegram(content):
     try:
         requests.post(api_url, json={'chat_id': chat_id, 'text': content})
     except Exception as exception:
-        print(exception)
+        message = f">>> ERROR: {exception.args}\n>>> STACK: {traceback.print_exc()}\n### Send to Telegram ###"
+        print(message)
 
 
 def main():
@@ -115,6 +117,7 @@ def main():
         html = HTMLParser(raw)
 
         novi_podaci = parse_html(html)
+        print("************************", novi_podaci)
         if "ID nadmetanja" in novi_podaci:
             current_id = novi_podaci["ID nadmetanja"]
             print(current_id)
@@ -124,6 +127,7 @@ def main():
         # check if file exists:
         if os.path.isfile(f"{CSV_FILE_NAME}_{current_id}.csv"):
             # compare data
+            print(f"{CSV_FILE_NAME}_{current_id}.csv")
             postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
             if bool(novi_podaci):
                 if current_id in postojeci_podaci[1]:
@@ -145,7 +149,8 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print(e.args)
-        send_to_telegram(f">>> ERROR: {e.args}\n (Ponip Pickler)")
+        message_content = f">>> ERROR: {e.args}\n>>> STACK: {traceback.print_exc()}\n### Ponip Pickler ###"
+        print(message_content)
+        send_to_telegram(message_content)
     finally:
         print(f"Program executed, {datetime.today()}.")
