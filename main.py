@@ -3,19 +3,30 @@
 import csv
 import hashlib
 import json
+import logging
 import os
 import traceback
 from datetime import datetime
-from config import urls
 
 import requests
 from deepdiff import DeepDiff
 from selectolax.parser import HTMLParser
 
+from config import urls
 
-CWD = ""  #"/opt/ponip_pickler/"
+CWD = "/opt/ponip_pickler/"  # ""
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = f"ponip_pickles"
+
+# Configure logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler(f"{CWD}ponip_pickled.log"),
+                        logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
+                        logging.StreamHandler()
+                    ]
+                    )
 
 
 def write_to_csv(data, id_nad=""):
@@ -108,7 +119,7 @@ def send_to_telegram(content):
         requests.post(api_url, json={'chat_id': chat_id, 'text': content})
     except Exception as exception:
         message = f">>> ERROR: {exception.args}\n>>> STACK: {traceback.print_exc()}\n### Send to Telegram ###"
-        print(message)
+        logging.info(message)
 
 
 def main():
@@ -117,18 +128,20 @@ def main():
         html = HTMLParser(raw)
 
         novi_podaci = parse_html(html)
-        print("************************", novi_podaci)
+        # print("************************", novi_podaci)
         if "ID nadmetanja" in novi_podaci:
             current_id = novi_podaci["ID nadmetanja"]
-            print(current_id)
+            # print(current_id)
+            logging.info(f"Current id: {current_id}.")
         else:
-            print("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
+            logging.info("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
 
         # check if file exists:
         if os.path.isfile(f"{CSV_FILE_NAME}_{current_id}.csv"):
             # compare data
-            print(f"{CSV_FILE_NAME}_{current_id}.csv")
+            logging.info(f"Current file: {CSV_FILE_NAME}_{current_id}.csv")
             postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
+            logging.debug(postojeci_podaci)
             if bool(novi_podaci):
                 if current_id in postojeci_podaci[1]:
                     # Vrati originalni dictionary
@@ -138,7 +151,7 @@ def main():
                     if bool(changes):
                         send_to_telegram(
                             f"Promjene na promatranoj nekretnini (ID {current_id}):\n\n{changes}")
-                        print(f"Sent changes in {current_id} to telegram, {datetime.today()}")
+                        logging.info(f"Sent changes in {current_id} to telegram, {datetime.today()}")
         else:
             send_to_telegram(f"New file added: {current_id}")
 
@@ -149,8 +162,8 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        message_content = f">>> ERROR: {e.args}\n>>> STACK: {traceback.print_exc()}\n### Ponip Pickler ###"
-        print(message_content)
+        message_content = f">>> ERROR: {e.args}\n>>> STACK: {traceback.walk_stack(f=None)}\n### Ponip Pickler ###"
+        logging.info(message_content)
         send_to_telegram(message_content)
     finally:
-        print(f"Program executed, {datetime.today()}.")
+        logging.info(f"Program executed, {datetime.today()}.")
