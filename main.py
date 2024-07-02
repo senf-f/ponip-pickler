@@ -105,7 +105,7 @@ def hash_data(json_input):
 
 
 def compare_hashes(hash_new, hash_old):
-    return DeepDiff(t1=hash_new, t2=hash_old)
+    return DeepDiff(t1=hash_old, t2=hash_new)
 
 
 def send_to_telegram(content):
@@ -128,10 +128,8 @@ def main():
         html = HTMLParser(raw)
 
         novi_podaci = parse_html(html)
-        # print("************************", novi_podaci)
         if "ID nadmetanja" in novi_podaci:
             current_id = novi_podaci["ID nadmetanja"]
-            # print(current_id)
             logging.info(f"Current id: {current_id}.")
         else:
             logging.info("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
@@ -141,6 +139,8 @@ def main():
             # compare data
             logging.info(f"Current file: {CSV_FILE_NAME}_{current_id}.csv")
             postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
+            if len(postojeci_podaci) == 1:
+                raise IOError(f"{CSV_FILE_NAME}_{current_id}.csv ima samo jedan redak!")
             logging.debug(postojeci_podaci)
             if bool(novi_podaci):
                 if current_id in postojeci_podaci[1]:
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        message_content = f">>> ERROR: {e.args}\n>>> STACK: {traceback.walk_stack(f=None)}\n### Ponip Pickler ###"
+        message_content = f">>> ERROR: {e.args}\n>>> STACK: {traceback.format_exc()}\n### Ponip Pickler ###"
         logging.info(message_content)
         send_to_telegram(message_content)
     finally:
