@@ -38,10 +38,12 @@ def write_to_csv(data, id_nad=""):
             writer.writeheader()
         writer.writerow(
             {**data, "Datum": datetime.today().date(), "Hash": data_hash, "ID": data["ID nadmetanja"]})
+        logging.info(f"[+] Write row to {csv_file_path}")
 
 
 def read_from_csv(csv_file):
     with open(f"{CWD}{csv_file}", encoding="utf-8") as f:
+        logging.info(f"[+] Reading from {CWD}{csv_file}")
         zapisi = f.read().splitlines()
     return zapisi
 
