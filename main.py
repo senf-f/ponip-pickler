@@ -16,7 +16,7 @@ from config import urls
 
 CWD = "/opt/ponip_pickler/"  # ""
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
-CSV_FILE_NAME = f"ponip_pickles"
+CSV_FILE_NAME = "ponip_pickles"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -137,7 +137,7 @@ def main():
             logging.info("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
 
         # check if file exists:
-        if os.path.isfile(f"{CSV_FILE_NAME}_{current_id}.csv"):
+        if os.path.isfile(f"{CWD}{CSV_FILE_NAME}_{current_id}.csv"):
             # compare data
             logging.info(f"Current file: {CSV_FILE_NAME}_{current_id}.csv")
             postojeci_podaci = read_from_csv(csv_file=f"{CSV_FILE_NAME}_{current_id}.csv")
@@ -156,6 +156,7 @@ def main():
                         logging.info(f"Sent changes in {current_id} to telegram, {datetime.today()}")
         else:
             send_to_telegram(f"New file added: {current_id}")
+            logging.info(f"[!+!] New file added: {current_id}")
 
         write_to_csv(novi_podaci, id_nad=current_id)
 
