@@ -134,7 +134,7 @@ def main():
             current_id = novi_podaci["ID nadmetanja"]
             logging.info(f"Current id: {current_id}.")
         else:
-            logging.info("ID nadmetanja nije pronađen. Moguće da je url uklonjen?")
+            logging.info(f"ID nadmetanja nije pronađen. Moguće da je url uklonjen? URL: {url}")
 
         # check if file exists:
         if os.path.isfile(f"{CWD}{CSV_FILE_NAME}_{current_id}.csv"):
