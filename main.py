@@ -120,7 +120,7 @@ def send_to_telegram(content):
     try:
         requests.post(api_url, json={'chat_id': chat_id, 'text': content})
     except Exception as exception:
-        message = f">>> ERROR: {exception.args}\n>>> STACK: {traceback.print_exc()}\n### Send to Telegram ###"
+        message = f">>> ERROR: {exception.args}\n>>> STACK: {traceback.print_exc()}\n### Sending to Telegram ###"
         logging.info(message)
 
 
