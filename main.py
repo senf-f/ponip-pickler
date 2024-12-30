@@ -28,12 +28,9 @@ logging.basicConfig(
     ]
 )
 
-# Utility function for hashing
 def hash_data(json_input):
     return hashlib.sha256(json.dumps(json_input, ensure_ascii=False).encode('utf-8')).hexdigest()
 
-
-# Refactored functions
 
 def get_html(url):
     """Fetch the HTML content from a URL."""
@@ -60,8 +57,8 @@ def parse_html(html_input):
                 data[key] = value
 
         return data
-    except Exception as e:
-        logging.error(f"Failed to parse HTML: {e}")
+    except Exception as err:
+        logging.error(f"Failed to parse HTML: {err}")
         raise
 
 
@@ -77,8 +74,8 @@ def unpack_csv_row(csv_file, id_nadmetanja):
                     return {key: row[key] for key in keys_list}
     except FileNotFoundError:
         logging.error(f"File {csv_file} not found.")
-    except Exception as e:
-        logging.error(f"Error unpacking row from {csv_file}: {e}")
+    except Exception as err:
+        logging.error(f"Error unpacking row from {csv_file}: {err}")
     return None
 
 
@@ -135,7 +132,7 @@ def process_url(url):
         id_nadmetanja = data["ID nadmetanja"]
         compare_and_notify(data, id_nadmetanja)
         write_new_record(data, id_nadmetanja)
-    except Exception as e:
+    except Exception as err:
         logging.error(f"Error processing URL {url}: {traceback.format_exc()}")
 
 
