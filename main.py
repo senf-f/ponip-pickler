@@ -14,7 +14,7 @@ from selectolax.parser import HTMLParser
 
 from config import urls
 
-CWD = "/opt/ponip_pickler/"  # ""
+CWD = "/opt/ponip/pickler/"  # ""
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = "ponip_pickles"
 
