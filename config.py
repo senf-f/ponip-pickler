@@ -1,15 +1,22 @@
-urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/e183454c-6db5-4374-9909-a02370f6c6c8",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/f8a0a6f9-6f2b-4aeb-b7a1-c321618916c1",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/a5660dd1-adc1-433a-b794-2b6abd3328fa",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/79165f06-c214-4f84-b897-afaa466bac7d", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9834527f-650f-4c66-8ee8-c9b73960f3c1",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/82fc219d-b3b2-4989-a5b7-148708c78d64",
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/521cf022-4a27-458e-a6b3-f8e0d66a0cb4", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/96bcaab7-e156-47ad-8df8-18fa3b8f9c61", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/6a0896b3-60c9-4d11-888d-694c0572992d", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/e1f4168e-a048-40e8-bf16-eb8eba79e385", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/8cf9cb6f-dfa6-452a-9ece-88ee3e240edc", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/dc56e2f0-e4af-4e0e-9331-4f53efa639cf", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/f8ea6ea1-6967-4735-9cde-94a6bc6dd27b", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/6dfe0101-484e-4dac-b980-f7aff41c1af2", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/d582825a-b779-446e-b47a-baeab86300c7"]
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
+# Determine the environment
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+# Configure the database URL
+if ENVIRONMENT == "production":
+    DATABASE_URL = os.getenv("DATABASE_URL")
+else:
+    DATABASE_URL = f"sqlite:///{os.getcwd()}/test_pickler.db"  # Local SQLite database
+
+# Initialize SQLAlchemy engine and session
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+print(f"Using {DATABASE_URL} for {ENVIRONMENT} environment.")
