@@ -5,7 +5,6 @@ import hashlib
 import json
 import logging
 import os
-import traceback
 from datetime import datetime
 
 import requests
@@ -34,9 +33,9 @@ logging.basicConfig(
 
 
 def initialize_database():
-    print("Initializing database...")
+    logging.info("Initializing database...")
     Base.metadata.create_all(engine, checkfirst=True)
-    print("Database initialized.")
+    logging.info("Database initialized.")
 
 
 def hash_data(json_input):
@@ -49,8 +48,8 @@ def get_html(url):
         response = requests.get(url)
         response.raise_for_status()
         return response.text
-    except requests.RequestException as e:
-        logging.error(f"Failed to fetch URL {url}: {e}")
+    except requests.RequestException as err:
+        logging.error(f"Failed to fetch URL {url}: {err}")
         raise
 
 
@@ -92,6 +91,7 @@ def unpack_csv_row(csv_file, id_nadmetanja):
 
 def compare_and_notify(new_data, id_nadmetanja):
     """Compare new data with existing data and notify changes."""
+    # TODO: deprecated?
     csv_file = f"{CWD}{CSV_FILE_NAME}_{id_nadmetanja}.csv"
 
     if os.path.isfile(csv_file):
@@ -141,15 +141,15 @@ def write_sales_info(session, data):
             session.add(new_record)
             session.commit()
             logging.info(f"Added new sales info for ID {data['ID nadmetanja']}.")
-        except Exception as e:
+        except Exception as err:
             session.rollback()
-            logging.error(f"Failed to commit transaction: {e}")
+            logging.error(f"Failed to commit transaction: {err}")
             raise
 
 
-def read_sales_info(session, id):
+def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
-    record = session.query(SalesInfo).filter_by(id=id).first()
+    record = session.query(SalesInfo).filter_by(id=id_nadmetanja).first()
     if record:
         return {
             "id": record.id,
@@ -168,7 +168,7 @@ def compare_and_notify_sales(session, new_data):
     if existing_data:
         # Compare hashes to detect changes
         if existing_data["data_hash"] != hash_data(new_data):
-            changes = DeepDiff(existing_data, new_data)
+            changes = DeepDiff(existing_data["json_data"], new_data)
             send_to_telegram(f"Changes detected for ID {new_data['ID nadmetanja']}:\n{changes}")
             logging.info(f"Changes detected and notified for ID {new_data['ID nadmetanja']}.")
             write_sales_info(session, new_data)
@@ -182,6 +182,7 @@ def compare_and_notify_sales(session, new_data):
 
 def write_new_record(data, id_nadmetanja):
     """Write new data to a CSV file."""
+    # TODO: deprecated?
     try:
         csv_file = f"{CWD}{CSV_FILE_NAME}_{id_nadmetanja}.csv"
         data_hash = hash_data(data)
@@ -193,8 +194,8 @@ def write_new_record(data, id_nadmetanja):
                 {**data, "Datum": datetime.today().date(), "Hash": data_hash, "ID": id_nadmetanja}
             )
         logging.info(f"Data for ID {id_nadmetanja} written to {csv_file}.")
-    except Exception as e:
-        logging.error(f"Failed to write record for ID {id_nadmetanja}: {e}")
+    except Exception as err:
+        logging.error(f"Failed to write record for ID {id_nadmetanja}: {err}")
         raise
 
 
@@ -214,16 +215,15 @@ def process_urls(session):
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
+            # TODO: ova varijabla se ne koristi
             id_nadmetanja = int(data["ID nadmetanja"])
 
             # Compare the new data with existing data in the database
             compare_and_notify_sales(session, data)
 
-        except Exception as e:
-            logging.error(f"Error processing URL {url}: {traceback.format_exc()}")
+        except Exception as err:
+            logging.error(f"Error processing URL {url}: {err}")
 
-
-# Main function
 
 def main():
     """Main entry point for the pickler app."""
@@ -234,8 +234,8 @@ def main():
 
     try:
         process_urls(session)
-    except Exception as e:
-        logging.error(f"Unhandled exception: {traceback.format_exc()}")
+    except Exception as err:
+        logging.error(f"Unhandled exception: {err}")
     finally:
         session.close()
         logging.info("Database session closed.")
@@ -253,8 +253,8 @@ def send_to_telegram(content):
     try:
         requests.post(api_url, json={'chat_id': chat_id, 'text': content})
         logging.info("Message sent to Telegram.")
-    except Exception as e:
-        logging.error(f"Failed to send Telegram message: {e}")
+    except Exception as err:
+        logging.error(f"Failed to send Telegram message: {err}")
 
 
 if __name__ == '__main__':
@@ -262,4 +262,4 @@ if __name__ == '__main__':
         initialize_database()
         main()
     except Exception as e:
-        logging.error(f"Unhandled exception: {traceback.format_exc()}")
+        logging.error(f"Unhandled exception: {e}")
