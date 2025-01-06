@@ -145,18 +145,15 @@ def process_urls(session):
     for url in urls:
         logging.info(f"Processing URL: {url}")
         try:
-            # Fetch and parse the HTML data
             raw_html = get_html(url)
             data = parse_html(raw_html)
 
-            # Log parsed data for debugging
             logging.debug(f"Parsed data: {data}")
 
             if "ID nadmetanja" not in data:
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
-            # Compare the new data with existing data in the database
             compare_and_notify_sales(session, data)
 
         except Exception as err:
@@ -166,8 +163,6 @@ def process_urls(session):
 def main():
     """Main entry point for the pickler app."""
     logging.info("Starting Ponip Pickler...")
-
-    # Create a database session
     session = SessionLocal()
 
     try:
