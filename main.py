@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
-import csv
 import hashlib
 import json
 import logging
-import os
-from datetime import datetime
 
 import requests
 from deepdiff import DeepDiff
@@ -70,47 +67,6 @@ def parse_html(html_input):
     except Exception as err:
         logging.error(f"Failed to parse HTML: {err}")
         raise
-
-
-def unpack_csv_row(csv_file, id_nadmetanja):
-    """Retrieve the original dictionary for a given ID from the CSV file."""
-    # TODO: deprecated?
-    try:
-        with open(csv_file, "r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            keys_list = [key for key in reader.fieldnames if key not in DODANE_INFORMACIJE]
-            for row in reader:
-                if row["ID"] == id_nadmetanja:
-                    # Return only the original fields, excluding metadata
-                    return {key: row[key] for key in keys_list}
-    except FileNotFoundError:
-        logging.error(f"File {csv_file} not found.")
-    except Exception as err:
-        logging.error(f"Error unpacking row from {csv_file}: {err}")
-    return None
-
-
-def compare_and_notify(new_data, id_nadmetanja):
-    """Compare new data with existing data and notify changes."""
-    # TODO: deprecated?
-    csv_file = f"{CWD}{CSV_FILE_NAME}_{id_nadmetanja}.csv"
-
-    if os.path.isfile(csv_file):
-        logging.info(f"Existing file found for ID {id_nadmetanja}. Comparing data...")
-        existing_data = unpack_csv_row(csv_file, id_nadmetanja)
-        if not existing_data:
-            logging.warning(f"Empty or invalid data in {csv_file}.")
-            return
-
-        changes = DeepDiff(existing_data, new_data)
-        if changes:
-            send_to_telegram(f"Changes detected for ID {id_nadmetanja}:\n{changes}")
-            logging.info(f"Changes sent to Telegram for ID {id_nadmetanja}.")
-        else:
-            logging.info(f"No changes detected for ID {id_nadmetanja}.")
-    else:
-        logging.info(f"No existing file for ID {id_nadmetanja}. Writing new data.")
-        send_to_telegram(f"New entry detected: ID {id_nadmetanja}")
 
 
 def write_sales_info(session, data):
@@ -187,25 +143,6 @@ def compare_and_notify_sales(session, new_data):
         write_sales_info(session, new_data)
 
 
-def write_new_record(data, id_nadmetanja):
-    """Write new data to a CSV file."""
-    # TODO: deprecated?
-    try:
-        csv_file = f"{CWD}{CSV_FILE_NAME}_{id_nadmetanja}.csv"
-        data_hash = hash_data(data)
-        with open(csv_file, 'w+', newline='', encoding='utf-8') as file:
-            writer = csv.DictWriter(file, fieldnames=list(data.keys()) + DODANE_INFORMACIJE)
-            if file.tell() == 0:
-                writer.writeheader()
-            writer.writerow(
-                {**data, "Datum": datetime.today().date(), "Hash": data_hash, "ID": id_nadmetanja}
-            )
-        logging.info(f"Data for ID {id_nadmetanja} written to {csv_file}.")
-    except Exception as err:
-        logging.error(f"Failed to write record for ID {id_nadmetanja}: {err}")
-        raise
-
-
 def process_urls(session):
     """Process all URLs and handle their data."""
     for url in urls:
@@ -221,9 +158,6 @@ def process_urls(session):
             if "ID nadmetanja" not in data:
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
-
-            # TODO: ova varijabla se ne koristi
-            id_nadmetanja = int(data["ID nadmetanja"])
 
             # Compare the new data with existing data in the database
             compare_and_notify_sales(session, data)
