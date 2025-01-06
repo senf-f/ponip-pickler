@@ -13,7 +13,7 @@ from data import Base
 from data import SalesInfo
 from urls import urls
 
-CWD = ""#"/opt/ponip/pickler/"
+CWD = "/opt/ponip/pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = "ponip_pickles"
 
@@ -23,7 +23,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(f"{CWD}ponip_pickled.log"),
-        # logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
+        logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
         logging.StreamHandler()
     ]
 )
@@ -69,6 +69,11 @@ def parse_html(html_input):
         raise
 
 
+def update_if_changed(obj, attr, value):
+    if getattr(obj, attr) != value:
+        setattr(obj, attr, value)
+
+
 def commit_session(session):
     try:
         session.commit()
@@ -88,11 +93,11 @@ def write_sales_info(session, data):
 
     if existing_record:
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
-        existing_record.iznos_najvise_ponude = data.get("iznos_najvise_ponude")
-        existing_record.status_nadmetanja = data.get("status_nadmetanja", "UNKNOWN")
-        existing_record.broj_uplatitelja = data.get("broj_uplatitelja")
-        existing_record.data_hash = data_hash
-        existing_record.json_data = json_data
+        update_if_changed(existing_record, "iznos_najvise_ponude", data.get("iznos_najvise_ponude"))
+        update_if_changed(existing_record, "status_nadmetanja", data.get("status_nadmetanja", "UNKNOWN"))
+        update_if_changed(existing_record, "broj_uplatitelja", data.get("broj_uplatitelja"))
+        update_if_changed(existing_record, "data_hash", data_hash)
+        update_if_changed(existing_record, "json_data", json_data)
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
     else:
         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
@@ -184,7 +189,7 @@ def send_to_telegram(content):
     api_url = f"https://api.telegram.org/bot{api_token}/sendMessage"
 
     try:
-        # requests.post(api_url, json={'chat_id': chat_id, 'text': content})
+        requests.post(api_url, json={'chat_id': chat_id, 'text': content})
         logging.info("Message sent to Telegram.")
     except Exception as err:
         logging.error(f"Failed to send Telegram message: {err}")
