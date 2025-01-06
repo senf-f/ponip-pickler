@@ -9,21 +9,18 @@ from deepdiff import DeepDiff
 from selectolax.parser import HTMLParser
 
 from config import engine, SessionLocal
-from data import Base
-from data import SalesInfo
+from configurator import load_config
+from data import Base, SalesInfo
 from urls import urls
 
-CWD = "/opt/ponip/pickler/"
-DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
-CSV_FILE_NAME = "ponip_pickles"
+CONFIG = load_config()
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f"{CWD}ponip_pickled.log"),
-        logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
+        logging.FileHandler(CONFIG["log_files"]),
         logging.StreamHandler()
     ]
 )
@@ -188,11 +185,12 @@ def send_to_telegram(content):
     chat_id = creds.TELEGRAM_CHAT_ID
     api_url = f"https://api.telegram.org/bot{api_token}/sendMessage"
 
-    try:
-        requests.post(api_url, json={'chat_id': chat_id, 'text': content})
-        logging.info("Message sent to Telegram.")
-    except Exception as err:
-        logging.error(f"Failed to send Telegram message: {err}")
+    if CONFIG["send_to_telegram"] == "1":
+        try:
+            requests.post(api_url, json={'chat_id': chat_id, 'text': content})
+            logging.info("Message sent to Telegram.")
+        except Exception as err:
+            logging.error(f"Failed to send Telegram message: {err}")
 
 
 if __name__ == '__main__':

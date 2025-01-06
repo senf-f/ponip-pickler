@@ -1,0 +1,4 @@
+{
+  "send_to_telegram": "1",
+  "log_files": "/var/log/scrapers/ponip_pickle_log.txt"
+}
