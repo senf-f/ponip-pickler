@@ -13,7 +13,7 @@ from data import Base
 from data import SalesInfo
 from urls import urls
 
-CWD = "/opt/ponip/pickler/"
+CWD = ""#"/opt/ponip/pickler/"
 DODANE_INFORMACIJE = ["Datum", "Hash", "ID"]
 CSV_FILE_NAME = "ponip_pickles"
 
@@ -23,7 +23,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(f"{CWD}ponip_pickled.log"),
-        logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
+        # logging.FileHandler("/var/log/scrapers/ponip_pickle_log.txt"),
         logging.StreamHandler()
     ]
 )
@@ -69,6 +69,15 @@ def parse_html(html_input):
         raise
 
 
+def commit_session(session):
+    try:
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logging.error(f"Failed to commit transaction: {err}")
+        raise
+
+
 def write_sales_info(session, data):
     """Write or update sales info in the database."""
     data_hash = hash_data(data)  # Generate hash for the JSON data
@@ -78,21 +87,15 @@ def write_sales_info(session, data):
     existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
 
     if existing_record:
-        # Update existing record
+        logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
         existing_record.iznos_najvise_ponude = data.get("iznos_najvise_ponude")
         existing_record.status_nadmetanja = data.get("status_nadmetanja", "UNKNOWN")
         existing_record.broj_uplatitelja = data.get("broj_uplatitelja")
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
-        try:
-            session.commit()  # Add this line to persist changes
-        except Exception as err:
-            session.rollback()
-            logging.error(f"Failed to commit transaction: {err}")
-            raise
     else:
-        # Add a new record
+        logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
         new_record = SalesInfo(
             id=data["ID nadmetanja"],
             iznos_najvise_ponude=data.get("iznos_najvise_ponude"),
@@ -100,14 +103,8 @@ def write_sales_info(session, data):
             data_hash=data_hash,
             json_data=json_data
         )
-        try:
-            session.add(new_record)
-            session.commit()
-            logging.info(f"Added new sales info for ID {data['ID nadmetanja']}.")
-        except Exception as err:
-            session.rollback()
-            logging.error(f"Failed to commit transaction: {err}")
-            raise
+        session.add(new_record)
+    commit_session(session)
 
 
 def read_sales_info(session, id_nadmetanja):
@@ -192,7 +189,7 @@ def send_to_telegram(content):
     api_url = f"https://api.telegram.org/bot{api_token}/sendMessage"
 
     try:
-        requests.post(api_url, json={'chat_id': chat_id, 'text': content})
+        # requests.post(api_url, json={'chat_id': chat_id, 'text': content})
         logging.info("Message sent to Telegram.")
     except Exception as err:
         logging.error(f"Failed to send Telegram message: {err}")
