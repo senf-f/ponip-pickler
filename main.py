@@ -74,6 +74,7 @@ def parse_html(html_input):
 
 def unpack_csv_row(csv_file, id_nadmetanja):
     """Retrieve the original dictionary for a given ID from the CSV file."""
+    # TODO: deprecated?
     try:
         with open(csv_file, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
@@ -128,6 +129,12 @@ def write_sales_info(session, data):
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
+        try:
+            session.commit()  # Add this line to persist changes
+        except Exception as err:
+            session.rollback()
+            logging.error(f"Failed to commit transaction: {err}")
+            raise
     else:
         # Add a new record
         new_record = SalesInfo(
