@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import datetime
 import hashlib
 import json
 import logging
@@ -29,7 +29,7 @@ logging.basicConfig(
 def initialize_database():
     logging.info("Initializing database...")
     Base.metadata.create_all(engine, checkfirst=True)
-    logging.info("Database initialized.")
+    logging.info(f"Database initialized. Time: {datetime.datetime.now()}")
 
 
 def hash_data(json_input):
