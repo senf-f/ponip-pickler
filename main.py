@@ -184,10 +184,11 @@ def send_to_telegram(content):
     api_token = creds.TELEGRAM_API_TOKEN_TECH
     chat_id = creds.TELEGRAM_CHAT_ID
     api_url = f"https://api.telegram.org/bot{api_token}/sendMessage"
+    ponip_url = "https://ponip.fina.hr/ocevidnik-web/pretrazivanje/nekretnina"
 
     if CONFIG["send_to_telegram"] == "1":
         try:
-            requests.post(api_url, json={'chat_id': chat_id, 'text': content})
+            requests.post(api_url, json={'chat_id': chat_id, 'text': f"{content}\n{ponip_url}"})
             logging.info("Message sent to Telegram.")
         except Exception as err:
             logging.error(f"Failed to send Telegram message: {err}")
