@@ -154,6 +154,7 @@ def process_urls(session):
 
             if "ID nadmetanja" not in data:
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
+                send_to_telegram(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
             compare_and_notify_sales(session, data)
