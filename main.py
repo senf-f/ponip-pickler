@@ -57,7 +57,10 @@ def parse_html(html_input):
             podaci_desno = vrijednost.parent.parent.css("div:nth-child(2) > p")
             for podatak in podaci_desno:
                 key = vrijednost.text(strip=True)
-                value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
+                if key.startswith("Trenutačna cijena"):
+                    value = html.css_first("#trenutna-cijena")
+                else:
+                    value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
 
         return data
