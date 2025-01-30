@@ -58,11 +58,10 @@ def parse_html(html_input):
             for podatak in podaci_desno:
                 key = vrijednost.text(strip=True)
                 if key.startswith("Trenutačna cijena"):
-                    value = html.css_first("#trenutna-cijena")
+                    value = html.css_first("#trenutna-cijena").text(strip=True)
                 else:
                     value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
-
         return data
     except Exception as err:
         logging.error(f"Failed to parse HTML: {err}")
