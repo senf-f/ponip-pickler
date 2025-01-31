@@ -135,8 +135,7 @@ def compare_and_notify_sales(session, new_data):
         # ------------------------------------------------
         print(f"[MM] {existing_data['data_hash']=}")
         print(f"[MM] {hash_data(new_data)=}")
-        existing_json = json.loads(existing_data["json_data"])
-        print(f"Existing JSON: {existing_json}")
+        print("Existing JSON:", existing_data["json_data"])
         print(f"New JSON: {new_data}")
         # ------------------------------------------------
         if existing_data["data_hash"] != hash_data(new_data):
