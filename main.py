@@ -132,10 +132,18 @@ def compare_and_notify_sales(session, new_data):
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
     if existing_data:
         # Compare hashes to detect changes
+        # ------------------------------------------------
         print(f"[MM] {existing_data['data_hash']=}")
         print(f"[MM] {hash_data(new_data)=}")
+        existing_json = json.loads(existing_data["json_data"])
+        print(f"Existing JSON: {existing_json}")
+        print(f"New JSON: {new_data}")
+        # ------------------------------------------------
         if existing_data["data_hash"] != hash_data(new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
+            # ------------------------------------------------
+            print(f"DeepDiff output: {changes}")
+            # ------------------------------------------------
             send_to_telegram(f"Changes detected for ID {new_data['ID nadmetanja']}:\n{changes.pretty()}")
             logging.info(f"Changes detected and notified for ID {new_data['ID nadmetanja']}.")
             write_sales_info(session, new_data)
