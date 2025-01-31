@@ -133,10 +133,10 @@ def compare_and_notify_sales(session, new_data):
     if existing_data:
         # Compare hashes to detect changes
         # ------------------------------------------------
-        print(f"[MM] {existing_data['data_hash']=}")
-        print(f"[MM] {hash_data(new_data)=}")
-        print("Existing JSON:", existing_data["json_data"])
-        print(f"New JSON: {new_data}")
+        # print(f"[MM] {existing_data['data_hash']=}")
+        # print(f"[MM] {hash_data(new_data)=}")
+        # print("Existing JSON:", existing_data["json_data"])
+        # print(f"New JSON: {new_data}")
         # ------------------------------------------------
         if existing_data["data_hash"] != hash_data(new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
