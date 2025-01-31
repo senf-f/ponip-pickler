@@ -33,7 +33,8 @@ def initialize_database():
 
 
 def hash_data(json_input):
-    return hashlib.sha256(json.dumps(json_input, ensure_ascii=False).encode('utf-8')).hexdigest()
+    json_string = json.dumps(json_input, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(json_string.encode('utf-8')).hexdigest()
 
 
 def get_html(url):
