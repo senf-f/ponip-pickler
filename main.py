@@ -90,6 +90,7 @@ def write_sales_info(session, data):
 
     # Check if the record already exists
     existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
+    print(f"[MM] {existing_record=}")
 
     if existing_record:
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
@@ -115,6 +116,7 @@ def write_sales_info(session, data):
 def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
     record = session.query(SalesInfo).filter_by(id=id_nadmetanja).first()
+    print(f"[MM] sales_info: {record.id}: {record.iznos_najvise_ponude}")
     if record:
         return {
             "id": record.id,
@@ -130,6 +132,8 @@ def read_sales_info(session, id_nadmetanja):
 def compare_and_notify_sales(session, new_data):
     """Compare new sales data with existing records and notify changes."""
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
+    print(f"[MM] {existing_data=}")
+    print(f"[MM] {new_data=}")
     if existing_data:
         # Compare hashes to detect changes
         # ------------------------------------------------
@@ -141,7 +145,7 @@ def compare_and_notify_sales(session, new_data):
         if existing_data["data_hash"] != hash_data(new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
             # ------------------------------------------------
-            print(f"DeepDiff output: {changes}")
+            print(f"DeepDiff output: {changes.pretty()}")
             # ------------------------------------------------
             send_to_telegram(f"Changes detected for ID {new_data['ID nadmetanja']}:\n{changes.pretty()}")
             logging.info(f"Changes detected and notified for ID {new_data['ID nadmetanja']}.")
@@ -163,6 +167,7 @@ def process_urls(session):
             data = parse_html(raw_html)
 
             logging.debug(f"Parsed data: {data}")
+            print(f"[MM] {data=}")
 
             if "ID nadmetanja" not in data:
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
