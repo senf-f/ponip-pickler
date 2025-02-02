@@ -134,7 +134,19 @@ def read_sales_info(session, id_nadmetanja):
         Nekretnina.pocetna_cijena,
         Nekretnina.datum_zavrsetka_nadmetanja
     ).all()}""")
-    record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first()
+    # record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first()
+    record = session.query(
+        Nekretnina.id,
+        # Nekretnina.opis,
+        # Nekretnina.utvrdjena_vrijednost,
+        # Nekretnina.pocetna_cijena,
+        # Nekretnina.datum_zavrsetka_nadmetanja,
+        SalesInfo.iznos_najvise_ponude,
+        SalesInfo.status_nadmetanja,
+        SalesInfo.broj_uplatitelja,
+        SalesInfo.data_hash,
+        SalesInfo.json_data
+    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).all()
     print(f"[MM] sales_info: {record.id}: {record.iznos_najvise_ponude}")
     if record:
         return {
