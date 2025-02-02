@@ -90,7 +90,7 @@ def write_sales_info(session, data):
     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
 
     # Check if the record already exists
-    # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first()
+    # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first() TODO
     existing_record = session.query(
         Nekretnina.id,
         SalesInfo.iznos_najvise_ponude,
@@ -124,31 +124,10 @@ def write_sales_info(session, data):
 
 def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
-    print(f"[MM] ****************************************** ###########################3")
-    # print(f"[MM] {session.query(Nekretnina).filter(int(id_nadmetanja) >= 1)}")
-    # print(f"""[MM] {session.query(
-    #     Nekretnina.id,
-    #     Nekretnina.opis,
-    #     Nekretnina.utvrdjena_vrijednost,
-    #     Nekretnina.pocetna_cijena,
-    #     Nekretnina.datum_zavrsetka_nadmetanja,
-    #     SalesInfo.iznos_najvise_ponude,
-    #     SalesInfo.status_nadmetanja,
-    # # ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).all()}""")
-    # print(f"""[MM] {session.query(
-    #     Nekretnina.id,
-    #     Nekretnina.opis,
-    #     Nekretnina.utvrdjena_vrijednost,
-    #     Nekretnina.pocetna_cijena,
-    #     Nekretnina.datum_zavrsetka_nadmetanja
-    # ).all()}""")
-    # record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first()
+    print(f"[MM] *********** ########################### ***********")
+    # record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first() TODO
     record = session.query(
         Nekretnina.id,
-        # Nekretnina.opis,
-        # Nekretnina.utvrdjena_vrijednost,
-        # Nekretnina.pocetna_cijena,
-        # Nekretnina.datum_zavrsetka_nadmetanja,
         SalesInfo.iznos_najvise_ponude,
         SalesInfo.status_nadmetanja,
         SalesInfo.broj_uplatitelja,
@@ -170,18 +149,11 @@ def read_sales_info(session, id_nadmetanja):
 
 def compare_and_notify_sales(session, new_data):
     """Compare new sales data with existing records and notify changes."""
-    print(f"[MM] #######")
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
     print(f"[MM] {existing_data=}")
     print(f"[MM] {new_data=}")
     if existing_data:
         # Compare hashes to detect changes
-        # ------------------------------------------------
-        # print(f"[MM] {existing_data['data_hash']=}")
-        # print(f"[MM] {hash_data(new_data)=}")
-        # print("Existing JSON:", existing_data["json_data"])
-        # print(f"New JSON: {new_data}")
-        # ------------------------------------------------
         if existing_data["data_hash"] != hash_data(new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
             # ------------------------------------------------
@@ -207,16 +179,12 @@ def process_urls(session):
             data = parse_html(raw_html)
 
             logging.debug(f"Parsed data: {data}")
-            print(f"[MM] {data=}")
 
             if "ID nadmetanja" not in data:
                 logging.warning(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 send_to_telegram(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
-            print(f"[MM] ******************************************")
-            print(f"[MM] {session=}")
-            print(f"[MM] ******************************************")
             compare_and_notify_sales(session, data)
 
         except Exception as err:
