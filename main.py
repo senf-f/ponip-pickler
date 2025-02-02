@@ -189,6 +189,7 @@ def process_urls(session):
 
         except Exception as err:
             logging.error(f"Error processing URL {url}: {err}")
+            send_to_telegram(f"Error processing URL {url}: {err}. \nMaybe the case is closed?")
 
 
 def main():
