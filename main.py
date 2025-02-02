@@ -146,7 +146,7 @@ def read_sales_info(session, id_nadmetanja):
         SalesInfo.broj_uplatitelja,
         SalesInfo.data_hash,
         SalesInfo.json_data
-    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).first()
+    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=id_nadmetanja).first()
     print(f"[MM] sales_info: {record.id}: {record.iznos_najvise_ponude}")
     if record:
         return {
