@@ -90,7 +90,15 @@ def write_sales_info(session, data):
     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
 
     # Check if the record already exists
-    existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first()
+    # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first()
+    existing_record = session.query(
+        Nekretnina.id,
+        SalesInfo.iznos_najvise_ponude,
+        SalesInfo.status_nadmetanja,
+        SalesInfo.broj_uplatitelja,
+        SalesInfo.data_hash,
+        SalesInfo.json_data
+    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=data["ID nadmetanja"]).first()
     print(f"[MM] {existing_record=}")
 
     if existing_record:
