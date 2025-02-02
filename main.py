@@ -10,7 +10,7 @@ from selectolax.parser import HTMLParser
 
 from config import engine, SessionLocal
 from configurator import load_config
-from data import Base, SalesInfo
+from data import Base, SalesInfo, Nekretnina
 from urls import urls
 
 CONFIG = load_config()
@@ -60,6 +60,7 @@ def parse_html(html_input):
                 key = vrijednost.text(strip=True)
                 if key.startswith("Trenutačna cijena"):
                     value = html.css_first("#trenutna-cijena").text(strip=True)
+                    print(f"[MM] Trenutna cijena: {value}")
                 else:
                     value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
@@ -89,7 +90,7 @@ def write_sales_info(session, data):
     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
 
     # Check if the record already exists
-    existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
+    existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first()
     print(f"[MM] {existing_record=}")
 
     if existing_record:
@@ -115,7 +116,25 @@ def write_sales_info(session, data):
 
 def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
-    record = session.query(SalesInfo).filter_by(id=id_nadmetanja).first()
+    print(f"[MM] ****************************************** ###########################3")
+    # print(f"[MM] {session.query(Nekretnina).filter(int(id_nadmetanja) >= 1)}")
+    print(f"""[MM] {session.query(
+        Nekretnina.id,
+        Nekretnina.opis,
+        Nekretnina.utvrdjena_vrijednost,
+        Nekretnina.pocetna_cijena,
+        Nekretnina.datum_zavrsetka_nadmetanja,
+        SalesInfo.iznos_najvise_ponude,
+        SalesInfo.status_nadmetanja,
+    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).all()}""")
+    print(f"""[MM] {session.query(
+        Nekretnina.id,
+        Nekretnina.opis,
+        Nekretnina.utvrdjena_vrijednost,
+        Nekretnina.pocetna_cijena,
+        Nekretnina.datum_zavrsetka_nadmetanja
+    ).all()}""")
+    record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first()
     print(f"[MM] sales_info: {record.id}: {record.iznos_najvise_ponude}")
     if record:
         return {
@@ -131,6 +150,7 @@ def read_sales_info(session, id_nadmetanja):
 
 def compare_and_notify_sales(session, new_data):
     """Compare new sales data with existing records and notify changes."""
+    print(f"[MM] #######")
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
     print(f"[MM] {existing_data=}")
     print(f"[MM] {new_data=}")
@@ -174,6 +194,9 @@ def process_urls(session):
                 send_to_telegram(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
+            print(f"[MM] ******************************************")
+            print(f"[MM] {session=}")
+            print(f"[MM] ******************************************")
             compare_and_notify_sales(session, data)
 
         except Exception as err:
