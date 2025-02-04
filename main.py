@@ -84,30 +84,58 @@ def commit_session(session):
         raise
 
 
+# def write_sales_info(session, data):
+#     """Write or update sales info in the database."""
+#     data_hash = hash_data(data)  # Generate hash for the JSON data
+#     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
+#
+#     # Check if the record already exists
+#     # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first() TODO
+#     existing_record = session.query(
+#         Nekretnina.id,
+#         SalesInfo.iznos_najvise_ponude,
+#         SalesInfo.status_nadmetanja,
+#         SalesInfo.broj_uplatitelja,
+#         SalesInfo.data_hash,
+#         SalesInfo.json_data
+#     ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=data["ID nadmetanja"]).first()
+#     print(f"[MM] {existing_record=}")
+#
+#     if existing_record:
+#         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
+#         update_if_changed(existing_record, "iznos_najvise_ponude", data.get("iznos_najvise_ponude"))
+#         update_if_changed(existing_record, "status_nadmetanja", data.get("status_nadmetanja", "UNKNOWN"))
+#         update_if_changed(existing_record, "broj_uplatitelja", data.get("broj_uplatitelja"))
+#         update_if_changed(existing_record, "data_hash", data_hash)
+#         update_if_changed(existing_record, "json_data", json_data)
+#         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
+#     else:
+#         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
+#         new_record = SalesInfo(
+#             id=data["ID nadmetanja"],
+#             iznos_najvise_ponude=data.get("iznos_najvise_ponude"),
+#             broj_uplatitelja=data.get("broj_uplatitelja"),
+#             data_hash=data_hash,
+#             json_data=json_data
+#         )
+#         session.add(new_record)
+#     commit_session(session)
+
 def write_sales_info(session, data):
     """Write or update sales info in the database."""
     data_hash = hash_data(data)  # Generate hash for the JSON data
     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
 
     # Check if the record already exists
-    # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first() TODO
-    existing_record = session.query(
-        Nekretnina.id,
-        SalesInfo.iznos_najvise_ponude,
-        SalesInfo.status_nadmetanja,
-        SalesInfo.broj_uplatitelja,
-        SalesInfo.data_hash,
-        SalesInfo.json_data
-    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=data["ID nadmetanja"]).first()
-    print(f"[MM] {existing_record=}")
+    existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
 
     if existing_record:
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
-        update_if_changed(existing_record, "iznos_najvise_ponude", data.get("iznos_najvise_ponude"))
-        update_if_changed(existing_record, "status_nadmetanja", data.get("status_nadmetanja", "UNKNOWN"))
-        update_if_changed(existing_record, "broj_uplatitelja", data.get("broj_uplatitelja"))
-        update_if_changed(existing_record, "data_hash", data_hash)
-        update_if_changed(existing_record, "json_data", json_data)
+        existing_record.iznos_najvise_ponude = data.get("iznos_najvise_ponude", existing_record.iznos_najvise_ponude)
+        existing_record.status_nadmetanja = data.get("status_nadmetanja", "UNKNOWN")
+        existing_record.broj_uplatitelja = data.get("broj_uplatitelja", existing_record.broj_uplatitelja)
+        existing_record.data_hash = data_hash
+        existing_record.json_data = json_data
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
     else:
         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
@@ -119,6 +147,7 @@ def write_sales_info(session, data):
             json_data=json_data
         )
         session.add(new_record)
+
     commit_session(session)
 
 
