@@ -60,7 +60,6 @@ def parse_html(html_input):
                 key = vrijednost.text(strip=True)
                 if key.startswith("Trenutačna cijena"):
                     value = html.css_first("#trenutna-cijena").text(strip=True)
-                    print(f"[MM] Trenutna cijena: {value}")
                 else:
                     value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
@@ -83,43 +82,6 @@ def commit_session(session):
         logging.error(f"Failed to commit transaction: {err}")
         raise
 
-
-# def write_sales_info(session, data):
-#     """Write or update sales info in the database."""
-#     data_hash = hash_data(data)  # Generate hash for the JSON data
-#     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
-#
-#     # Check if the record already exists
-#     # existing_record = session.query(Nekretnina).filter_by(id=data["ID nadmetanja"]).first() TODO
-#     existing_record = session.query(
-#         Nekretnina.id,
-#         SalesInfo.iznos_najvise_ponude,
-#         SalesInfo.status_nadmetanja,
-#         SalesInfo.broj_uplatitelja,
-#         SalesInfo.data_hash,
-#         SalesInfo.json_data
-#     ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=data["ID nadmetanja"]).first()
-#     print(f"[MM] {existing_record=}")
-#
-#     if existing_record:
-#         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
-#         update_if_changed(existing_record, "iznos_najvise_ponude", data.get("iznos_najvise_ponude"))
-#         update_if_changed(existing_record, "status_nadmetanja", data.get("status_nadmetanja", "UNKNOWN"))
-#         update_if_changed(existing_record, "broj_uplatitelja", data.get("broj_uplatitelja"))
-#         update_if_changed(existing_record, "data_hash", data_hash)
-#         update_if_changed(existing_record, "json_data", json_data)
-#         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
-#     else:
-#         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
-#         new_record = SalesInfo(
-#             id=data["ID nadmetanja"],
-#             iznos_najvise_ponude=data.get("iznos_najvise_ponude"),
-#             broj_uplatitelja=data.get("broj_uplatitelja"),
-#             data_hash=data_hash,
-#             json_data=json_data
-#         )
-#         session.add(new_record)
-#     commit_session(session)
 
 def write_sales_info(session, data):
     """Write or update sales info in the database."""
@@ -153,8 +115,6 @@ def write_sales_info(session, data):
 
 def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
-    print(f"[MM] *********** ########################### ***********")
-    # record = session.query(Nekretnina).filter_by(id=id_nadmetanja).first() TODO
     record = session.query(
         Nekretnina.id,
         SalesInfo.iznos_najvise_ponude,
@@ -163,7 +123,6 @@ def read_sales_info(session, id_nadmetanja):
         SalesInfo.data_hash,
         SalesInfo.json_data
     ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=id_nadmetanja).first()
-    print(f"[MM] sales_info: {record.id}: {record.iznos_najvise_ponude}")
     if record:
         return {
             "id": record.id,
@@ -179,15 +138,10 @@ def read_sales_info(session, id_nadmetanja):
 def compare_and_notify_sales(session, new_data):
     """Compare new sales data with existing records and notify changes."""
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
-    print(f"[MM] {existing_data=}")
-    print(f"[MM] {new_data=}")
     if existing_data:
         # Compare hashes to detect changes
         if existing_data["data_hash"] != hash_data(new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
-            # ------------------------------------------------
-            print(f"DeepDiff output: {changes.pretty()}")
-            # ------------------------------------------------
             send_to_telegram(f"Changes detected for ID {new_data['ID nadmetanja']}:\n{changes.pretty()}")
             logging.info(f"Changes detected and notified for ID {new_data['ID nadmetanja']}.")
             write_sales_info(session, new_data)
