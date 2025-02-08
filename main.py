@@ -166,6 +166,7 @@ def process_urls(session):
         try:
             raw_html = get_html(url)
             data = parse_html(raw_html)
+            print(f"*MM {data=}")
 
             logging.debug(f"Parsed data: {data}")
 
