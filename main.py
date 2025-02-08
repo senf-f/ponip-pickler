@@ -102,6 +102,8 @@ def write_sales_info(session, data):
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
+        print(f"MM {existing_record.iznos_najvise_ponude=}")
+        print(f"MM {existing_record.broj_uplatitelja=}")
     else:
         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
         new_record = SalesInfo(
