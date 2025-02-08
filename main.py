@@ -91,7 +91,7 @@ def write_sales_info(session, data):
 
     # Check if the record already exists
     existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
-
+    print(f"MM {data=}")
     if existing_record:
         trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
