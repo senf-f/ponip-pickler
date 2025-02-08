@@ -114,6 +114,7 @@ def write_sales_info(session, data):
         session.add(new_record)
 
     commit_session(session)
+    session.refresh(existing_record)
 
 
 def read_sales_info(session, id_nadmetanja):
