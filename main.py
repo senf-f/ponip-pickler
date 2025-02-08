@@ -64,7 +64,6 @@ def parse_html(html_input):
                 else:
                     value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
-        print(f"MM {data=}")
         return data
     except Exception as err:
         logging.error(f"Failed to parse HTML: {err}")
