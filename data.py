@@ -40,7 +40,7 @@ class SalesInfo(Base):
 
     # id = db.Column(db.Integer, db.ForeignKey("properties.id"), primary_key=True)
     id = Column(Integer, ForeignKey("properties.id"), primary_key=True)  # Matches 'id' from properties
-    iznos_najvise_ponude = Column(Float)   # Represents the highest bid amount
+    iznos_najvise_ponude = Column(String)   # Represents the highest bid amount
     status_nadmetanja = Column(String)      # Auction status
     broj_uplatitelja = Column(Integer)     # Number of participants
     data_hash = Column(Text)               # Hash of the JSON data

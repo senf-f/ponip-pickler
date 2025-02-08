@@ -19,6 +19,7 @@ CONFIG = load_config()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
+    encoding="UTF-8",
     handlers=[
         logging.FileHandler(CONFIG["log_files"]),
         logging.StreamHandler()
@@ -63,6 +64,7 @@ def parse_html(html_input):
                 else:
                     value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
                 data[key] = value
+        print(f"MM {data=}")
         return data
     except Exception as err:
         logging.error(f"Failed to parse HTML: {err}")
@@ -92,10 +94,12 @@ def write_sales_info(session, data):
     existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
 
     if existing_record:
+        trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
-        existing_record.iznos_najvise_ponude = data.get("iznos_najvise_ponude", existing_record.iznos_najvise_ponude)
+        existing_record.iznos_najvise_ponude = data.get(trenutna_cijena_key, existing_record.iznos_najvise_ponude)
         existing_record.status_nadmetanja = data.get("status_nadmetanja", "UNKNOWN")
-        existing_record.broj_uplatitelja = data.get("broj_uplatitelja", existing_record.broj_uplatitelja)
+        existing_record.broj_uplatitelja = data.get("Trenutačni brojuplatitelja jamčevine",
+                                                    existing_record.broj_uplatitelja)
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
