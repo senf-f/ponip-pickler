@@ -96,7 +96,12 @@ def write_sales_info(session, data):
         trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
         existing_record.iznos_najvise_ponude = data.get(trenutna_cijena_key, existing_record.iznos_najvise_ponude)
-        existing_record.status_nadmetanja = data.get("status_nadmetanja", "UNKNOWN")
+        auction_date = datetime.datetime.strptime(data.get('Datum i vrijeme završetka nadmetanja').split(' ')[0],
+                                                  "%d.%m.%Y.")
+        if auction_date.date() > datetime.datetime.today().date():
+            existing_record.status_nadmetanja = "DOVRŠENO"
+        else:
+            existing_record.status_nadmetanja = data.get("status_nadmetanja", "-")
         existing_record.broj_uplatitelja = data.get("Trenutačni brojuplatitelja jamčevine",
                                                     existing_record.broj_uplatitelja)
         existing_record.data_hash = data_hash
