@@ -100,7 +100,6 @@ def write_sales_info(session, data):
                                                   "%d.%m.%Y.")
         if auction_date.date() < datetime.datetime.today().date():
             existing_record.status_nadmetanja = "DOVRŠENO"
-            print("!!!!!!!!!!!!")
         else:
             existing_record.status_nadmetanja = data.get("status_nadmetanja", "-")
         existing_record.broj_uplatitelja = data.get("Trenutačni brojuplatitelja jamčevine",
