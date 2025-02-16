@@ -9,10 +9,10 @@ Base = declarative_base()
 
 @dataclass
 class Nekretnina(Base):
-    __tablename__ = "properties"  # Specifies the database table name
+    __tablename__ = "properties"
 
     # Column definitions
-    id: int = Column(Integer, primary_key=True)  # Primary key, scraped from data
+    id: int = Column(Integer, primary_key=True)
     nadlezno_tijelo: str = Column(Text, nullable=False)
     poslovni_broj: str = Column(String, nullable=False)
     opis: str = Column(Text, nullable=False)
@@ -38,10 +38,10 @@ class Nekretnina(Base):
 class SalesInfo(Base):
     __tablename__ = "sales_info"
 
-    # id = db.Column(db.Integer, db.ForeignKey("properties.id"), primary_key=True)
-    id = Column(Integer, ForeignKey("properties.id"), primary_key=True)  # Matches 'id' from properties
-    iznos_najvise_ponude = Column(String)   # Represents the highest bid amount
-    status_nadmetanja = Column(String)      # Auction status
-    broj_uplatitelja = Column(Integer)     # Number of participants
-    data_hash = Column(Text)               # Hash of the JSON data
-    json_data = Column(Text)               # JSON data as a string
+    id = Column(Integer, ForeignKey("properties.id"), primary_key=True)
+    iznos_najvise_ponude = Column(String)
+    status_nadmetanja = Column(String)
+    broj_uplatitelja = Column(Integer)
+    data_hash = Column(Text)
+    json_data = Column(Text)
+    url = Column(Text)

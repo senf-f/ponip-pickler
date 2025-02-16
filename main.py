@@ -84,7 +84,7 @@ def commit_session(session):
         raise
 
 
-def write_sales_info(session, data):
+def write_sales_info(session, data, url):
     """Write or update sales info in the database."""
     data_hash = hash_data(data)  # Generate hash for the JSON data
     json_data = json.dumps(data, ensure_ascii=False)  # Serialize the JSON data
@@ -106,6 +106,7 @@ def write_sales_info(session, data):
                                                     existing_record.broj_uplatitelja)
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
+        existing_record.url = url
         logging.info(f"Updated sales info for ID {data['ID nadmetanja']}.")
 
     else:
@@ -115,7 +116,8 @@ def write_sales_info(session, data):
             iznos_najvise_ponude=data.get("iznos_najvise_ponude"),
             broj_uplatitelja=data.get("broj_uplatitelja"),
             data_hash=data_hash,
-            json_data=json_data
+            json_data=json_data,
+            url=url
         )
         session.add(new_record)
 
@@ -145,7 +147,7 @@ def read_sales_info(session, id_nadmetanja):
     return None
 
 
-def compare_and_notify_sales(session, new_data):
+def compare_and_notify_sales(session, new_data, url):
     """Compare new sales data with existing records and notify changes."""
     existing_data = read_sales_info(session, new_data["ID nadmetanja"])
     if existing_data:
@@ -154,13 +156,13 @@ def compare_and_notify_sales(session, new_data):
             changes = DeepDiff(existing_data["json_data"], new_data, verbose_level=1)
             send_to_telegram(f"Changes detected for ID {new_data['ID nadmetanja']}:\n{changes.pretty()}")
             logging.info(f"Changes detected and notified for ID {new_data['ID nadmetanja']}.")
-            write_sales_info(session, new_data)
+            write_sales_info(session, new_data, url)
         else:
             logging.info(f"No changes detected for ID {new_data['ID nadmetanja']}.")
     else:
         send_to_telegram(f"New entry detected: ID {new_data['ID nadmetanja']}")
         logging.info(f"New sales info added for ID {new_data['ID nadmetanja']}.")
-        write_sales_info(session, new_data)
+        write_sales_info(session, new_data, url)
 
 
 def process_urls(session):
@@ -178,7 +180,7 @@ def process_urls(session):
                 send_to_telegram(f"No 'ID nadmetanja' found for URL: {url}. Skipping.")
                 continue
 
-            compare_and_notify_sales(session, data)
+            compare_and_notify_sales(session, data, url)
 
         except Exception as err:
             logging.error(f"Error processing URL {url}: {err}")
