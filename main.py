@@ -98,8 +98,9 @@ def write_sales_info(session, data):
         existing_record.iznos_najvise_ponude = data.get(trenutna_cijena_key, existing_record.iznos_najvise_ponude)
         auction_date = datetime.datetime.strptime(data.get('Datum i vrijeme završetka nadmetanja').split(' ')[0],
                                                   "%d.%m.%Y.")
-        if auction_date.date() > datetime.datetime.today().date():
+        if auction_date.date() < datetime.datetime.today().date():
             existing_record.status_nadmetanja = "DOVRŠENO"
+            print("!!!!!!!!!!!!")
         else:
             existing_record.status_nadmetanja = data.get("status_nadmetanja", "-")
         existing_record.broj_uplatitelja = data.get("Trenutačni brojuplatitelja jamčevine",
