@@ -46,6 +46,7 @@ def get_html(url):
         return response.text
     except requests.RequestException as err:
         logging.error(f"Failed to fetch URL {url}: {err}")
+        send_to_telegram(f"Failed to fetch URL {url}: {err}")
         raise
 
 
@@ -67,6 +68,7 @@ def parse_html(html_input):
         return data
     except Exception as err:
         logging.error(f"Failed to parse HTML: {err}")
+        send_to_telegram(f"Failed to parse HTML: {err}")
         raise
 
 
