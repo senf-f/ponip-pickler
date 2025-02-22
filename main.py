@@ -213,7 +213,7 @@ def send_to_telegram(content):
 
     if CONFIG["send_to_telegram"] == "1":
         try:
-            requests.post(api_url, json={'chat_id': chat_id, 'text': f"{content}\n{ponip_url}"})
+            requests.post(api_url, json={'chat_id': chat_id, 'text': f"{content}\n{ponip_url}"}, timeout=15)
             logging.info("Message sent to Telegram.")
         except Exception as err:
             logging.error(f"Failed to send Telegram message: {err}")
