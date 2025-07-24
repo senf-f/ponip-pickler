@@ -32,4 +32,5 @@ urls = ["https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/9834527f-650f-4c66-
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/93ce7246-9479-24b1-02c7-a18ddced50e0", 
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/ce26f5a6-6f27-40e9-ac88-9fdf4b2b338a", 
         "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/4d807d41-546f-4fbd-9d16-f2c3854c29d8", 
-        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/5158f488-c721-45fb-944a-0fea05cf63ff"]
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/5158f488-c721-45fb-944a-0fea05cf63ff",
+        "https://ponip.fina.hr/ocevidnik-web/predmet_prodaje/d6cd0aed-3912-42e2-8c46-35b75821a1da"]
