@@ -2,4 +2,5 @@ requests~=2.31.0
 deepdiff~=6.7.1
 selectolax~=0.3.17
 SQLAlchemy~=2.0.36
+psycopg2-binary~=2.9.9
 python-dotenv~=0.20.0
