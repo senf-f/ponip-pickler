@@ -10,7 +10,7 @@ from selectolax.parser import HTMLParser
 
 from config import engine, SessionLocal
 from configurator import load_config
-from data import Base, SalesInfo, Nekretnina
+from data import Base, SalesInfo
 from urls import urls
 
 CONFIG = load_config()
@@ -113,10 +113,11 @@ def write_sales_info(session, data, url):
 
     else:
         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
+        trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         new_record = SalesInfo(
             id=data["ID nadmetanja"],
-            iznos_najvise_ponude=data.get("iznos_najvise_ponude"),
-            broj_uplatitelja=data.get("broj_uplatitelja"),
+            iznos_najvise_ponude=data.get(trenutna_cijena_key),
+            broj_uplatitelja=data.get("Trenutačni brojuplatitelja jamčevine"),
             data_hash=data_hash,
             json_data=json_data,
             url=url
@@ -130,14 +131,7 @@ def write_sales_info(session, data, url):
 
 def read_sales_info(session, id_nadmetanja):
     """Retrieve sales info from the database."""
-    record = session.query(
-        Nekretnina.id,
-        SalesInfo.iznos_najvise_ponude,
-        SalesInfo.status_nadmetanja,
-        SalesInfo.broj_uplatitelja,
-        SalesInfo.data_hash,
-        SalesInfo.json_data
-    ).outerjoin(SalesInfo, Nekretnina.id == SalesInfo.id).filter_by(id=id_nadmetanja).first()
+    record = session.query(SalesInfo).filter_by(id=id_nadmetanja).first()
     if record:
         return {
             "id": record.id,
@@ -145,7 +139,7 @@ def read_sales_info(session, id_nadmetanja):
             "status_nadmetanja": record.status_nadmetanja,
             "broj_uplatitelja": record.broj_uplatitelja,
             "data_hash": record.data_hash,
-            "json_data": json.loads(record.json_data)  # Deserialize the JSON
+            "json_data": json.loads(record.json_data)
         }
     return None
 

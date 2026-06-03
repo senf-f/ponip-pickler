@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from data import Base, SalesInfo, Nekretnina
+from data import Base, SalesInfo
 from main import (
     hash_data,
     parse_html,
@@ -198,6 +198,13 @@ class TestWriteSalesInfo:
         assert record.data_hash is not None
         assert record.json_data is not None
 
+    def test_new_record_stores_price_and_bidders(self, db_session):
+        data = self._make_data()
+        write_sales_info(db_session, data, "http://example.com")
+        record = db_session.query(SalesInfo).filter_by(id="12345").first()
+        assert record.iznos_najvise_ponude == "50.000,00"
+        assert str(record.broj_uplatitelja) == "3"
+
     def test_updates_existing_record(self, db_session):
         data = self._make_data()
         write_sales_info(db_session, data, "http://example.com")
@@ -235,9 +242,7 @@ class TestWriteSalesInfo:
 # --- read_sales_info ---
 
 class TestReadSalesInfo:
-    def test_returns_none_when_no_nekretnina(self, db_session):
-        # Known bug: query starts from Nekretnina table, so without a
-        # Nekretnina row, it always returns None even if SalesInfo exists
+    def test_returns_data_after_write(self, db_session):
         data = {
             "ID nadmetanja": "99",
             "Trenutačna cijena predmeta prodaje u\xa0nadmetanju": "10",
@@ -246,42 +251,14 @@ class TestReadSalesInfo:
         }
         write_sales_info(db_session, data, "http://example.com")
         result = read_sales_info(db_session, "99")
-        # Documents current (buggy) behavior: returns None
-        assert result is None
-
-    def test_returns_data_when_nekretnina_exists(self, db_session):
-        # If a matching Nekretnina row exists, read_sales_info works
-        nekretnina = Nekretnina(
-            id=100,
-            nadlezno_tijelo="Sud",
-            poslovni_broj="PB-1",
-            opis="Test",
-            vrsta_predmeta="Nekretnina",
-            opseg_imovine="Cijela",
-            utvrdjena_vrijednost=100000.0,
-            broj_drazbe="1",
-            datum_odluke=datetime.datetime(2025, 1, 1),
-            datum_pocetka=datetime.datetime(2025, 1, 1),
-            datum_pocetka_nadmetanja=datetime.datetime(2025, 1, 1),
-            datum_zavrsetka_nadmetanja=datetime.datetime(2025, 7, 1),
-            min_cijena=50000.0,
-            pocetna_cijena=60000.0,
-            iznos_drazbenog_koraka=1000.0,
-            jamcevina=5000.0,
-        )
-        db_session.add(nekretnina)
-        db_session.commit()
-
-        data = {
-            "ID nadmetanja": "100",
-            "Trenutačna cijena predmeta prodaje u\xa0nadmetanju": "70.000",
-            "Trenutačni brojuplatitelja jamčevine": "2",
-            "Datum i vrijeme završetka nadmetanja": "01.07.2025. 12:00",
-        }
-        write_sales_info(db_session, data, "http://example.com")
-        result = read_sales_info(db_session, "100")
         assert result is not None
-        assert result["id"] == 100
+        assert str(result["id"]) == "99"
+        assert result["data_hash"] is not None
+        assert result["json_data"]["ID nadmetanja"] == "99"
+
+    def test_returns_none_for_nonexistent_id(self, db_session):
+        result = read_sales_info(db_session, "nonexistent")
+        assert result is None
 
 
 # --- compare_and_notify_sales ---
@@ -300,8 +277,7 @@ class TestCompareAndNotifySales:
         assert "New entry" in mock_telegram.call_args[0][0]
 
     @patch("main.send_to_telegram")
-    def test_always_treats_as_new_without_nekretnina(self, mock_telegram, db_session):
-        # Documents current bug: without Nekretnina row, every call is "new"
+    def test_no_notification_when_unchanged(self, mock_telegram, db_session):
         data = {
             "ID nadmetanja": "555",
             "Trenutačna cijena predmeta prodaje u\xa0nadmetanju": "10",
@@ -310,7 +286,21 @@ class TestCompareAndNotifySales:
         }
         compare_and_notify_sales(db_session, data, "http://example.com")
         compare_and_notify_sales(db_session, data, "http://example.com")
-        # Called twice because read_sales_info always returns None
+        # First call notifies "new entry", second should detect no change
+        assert mock_telegram.call_count == 1
+
+    @patch("main.send_to_telegram")
+    def test_notifies_on_change(self, mock_telegram, db_session):
+        data = {
+            "ID nadmetanja": "555",
+            "Trenutačna cijena predmeta prodaje u\xa0nadmetanju": "10",
+            "Trenutačni brojuplatitelja jamčevine": "1",
+            "Datum i vrijeme završetka nadmetanja": "01.01.2030. 12:00",
+        }
+        compare_and_notify_sales(db_session, data, "http://example.com")
+        data["Trenutačna cijena predmeta prodaje u\xa0nadmetanju"] = "20"
+        compare_and_notify_sales(db_session, data, "http://example.com")
+        # First call: new entry. Second call: change detected.
         assert mock_telegram.call_count == 2
 
 

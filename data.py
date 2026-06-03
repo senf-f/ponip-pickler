@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -38,7 +38,7 @@ class Nekretnina(Base):
 class SalesInfo(Base):
     __tablename__ = "sales_info"
 
-    id = Column(Integer, ForeignKey("properties.id"), primary_key=True)
+    id = Column(Integer, primary_key=True)
     iznos_najvise_ponude = Column(String)
     status_nadmetanja = Column(String)
     broj_uplatitelja = Column(Integer)
