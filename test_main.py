@@ -11,7 +11,6 @@ from data import Base, SalesInfo
 from main import (
     hash_data,
     parse_html,
-    update_if_changed,
     write_sales_info,
     read_sales_info,
     compare_and_notify_sales,
@@ -159,22 +158,21 @@ class TestParseHtml:
         result = parse_html(html)
         assert "75.000,00" in str(result.values())
 
-
-# --- update_if_changed ---
-
-class TestUpdateIfChanged:
-    def test_updates_when_different(self):
-        obj = MagicMock()
-        obj.name = "old"
-        update_if_changed(obj, "name", "new")
-        assert obj.name == "new"
-
-    def test_no_update_when_same(self):
-        class Obj:
-            name = "same"
-        o = Obj()
-        update_if_changed(o, "name", "same")
-        assert o.name == "same"
+    def test_trenutna_cijena_missing_element_returns_na(self):
+        html = """
+        <div class="main-container">
+          <div role="main">
+            <div class="row">
+              <div>
+                <p class="text-right">Trenutačna cijena something</p>
+              </div>
+              <div><p>ignored</p></div>
+            </div>
+          </div>
+        </div>
+        """
+        result = parse_html(html)
+        assert result.get("Trenutačna cijena something") == "N/A"
 
 
 # --- write_sales_info ---
@@ -329,8 +327,7 @@ class TestSendToTelegram:
 
 class TestGetHtml:
     @patch("main.requests.get")
-    @patch("main.send_to_telegram")
-    def test_returns_html_on_success(self, mock_telegram, mock_get):
+    def test_returns_html_on_success(self, mock_get):
         mock_get.return_value = MagicMock(
             text="<html></html>",
             raise_for_status=MagicMock()
@@ -339,13 +336,11 @@ class TestGetHtml:
         assert result == "<html></html>"
 
     @patch("main.requests.get")
-    @patch("main.send_to_telegram")
-    def test_raises_on_failure(self, mock_telegram, mock_get):
+    def test_raises_on_failure(self, mock_get):
         from requests.exceptions import ConnectionError
         mock_get.side_effect = ConnectionError("timeout")
         with pytest.raises(ConnectionError):
             get_html("http://example.com")
-        mock_telegram.assert_called_once()
 
 
 # --- configurator ---

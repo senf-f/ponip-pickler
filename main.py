@@ -15,6 +15,11 @@ from urls import urls
 
 CONFIG = load_config()
 
+TRENUTNA_CIJENA_KEY = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
+BROJ_UPLATITELJA_KEY = 'Trenutačni brojuplatitelja jamčevine'
+DATUM_ZAVRSETKA_KEY = 'Datum i vrijeme završetka nadmetanja'
+REQUEST_TIMEOUT = 30
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -40,41 +45,27 @@ def hash_data(json_input):
 
 def get_html(url):
     """Fetch the HTML content from a URL."""
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
-    except requests.RequestException as err:
-        logging.error(f"Failed to fetch URL {url}: {err}")
-        send_to_telegram(f"Failed to fetch URL {url}: {err}")
-        raise
+    response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    response.raise_for_status()
+    return response.text
 
 
 def parse_html(html_input):
     """Parse HTML content and extract data."""
     data = {}
     html = HTMLParser(html_input)
-    try:
-        vrijednosti_lijevo = html.css(".main-container [role='main'] .row div p.text-right")
-        for vrijednost in vrijednosti_lijevo:
-            podaci_desno = vrijednost.parent.parent.css("div:nth-child(2) > p")
-            for podatak in podaci_desno:
-                key = vrijednost.text(strip=True)
-                if key.startswith("Trenutačna cijena"):
-                    value = html.css_first("#trenutna-cijena").text(strip=True)
-                else:
-                    value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
-                data[key] = value
-        return data
-    except Exception as err:
-        logging.error(f"Failed to parse HTML: {err}")
-        send_to_telegram(f"Failed to parse HTML: {err}")
-        raise
-
-
-def update_if_changed(obj, attr, value):
-    if getattr(obj, attr) != value:
-        setattr(obj, attr, value)
+    vrijednosti_lijevo = html.css(".main-container [role='main'] .row div p.text-right")
+    for vrijednost in vrijednosti_lijevo:
+        podaci_desno = vrijednost.parent.parent.css("div:nth-child(2) > p")
+        for podatak in podaci_desno:
+            key = vrijednost.text(strip=True)
+            if key.startswith("Trenutačna cijena"):
+                el = html.css_first("#trenutna-cijena")
+                value = el.text(strip=True) if el else "N/A"
+            else:
+                value = podatak.text(strip=True) if podatak.text(strip=True) else "N/A"
+            data[key] = value
+    return data
 
 
 def commit_session(session):
@@ -95,17 +86,16 @@ def write_sales_info(session, data, url):
     existing_record = session.query(SalesInfo).filter_by(id=data["ID nadmetanja"]).first()
 
     if existing_record:
-        trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         logging.debug(f"Updating existing record for ID {data['ID nadmetanja']}.")
-        existing_record.iznos_najvise_ponude = data.get(trenutna_cijena_key, existing_record.iznos_najvise_ponude)
-        auction_date = datetime.datetime.strptime(data.get('Datum i vrijeme završetka nadmetanja').split(' ')[0],
-                                                  "%d.%m.%Y.")
-        if auction_date.date() < datetime.datetime.today().date():
-            existing_record.status_nadmetanja = "DOVRŠENO"
-        else:
-            existing_record.status_nadmetanja = data.get("status_nadmetanja", "-")
-        existing_record.broj_uplatitelja = data.get("Trenutačni brojuplatitelja jamčevine",
-                                                    existing_record.broj_uplatitelja)
+        existing_record.iznos_najvise_ponude = data.get(TRENUTNA_CIJENA_KEY, existing_record.iznos_najvise_ponude)
+        datum_str = data.get(DATUM_ZAVRSETKA_KEY)
+        if datum_str:
+            auction_date = datetime.datetime.strptime(datum_str.split(' ')[0], "%d.%m.%Y.")
+            if auction_date.date() < datetime.datetime.today().date():
+                existing_record.status_nadmetanja = "DOVRŠENO"
+            else:
+                existing_record.status_nadmetanja = "AKTIVNO"
+        existing_record.broj_uplatitelja = data.get(BROJ_UPLATITELJA_KEY, existing_record.broj_uplatitelja)
         existing_record.data_hash = data_hash
         existing_record.json_data = json_data
         existing_record.url = url
@@ -113,11 +103,10 @@ def write_sales_info(session, data, url):
 
     else:
         logging.debug(f"Creating new record for ID {data['ID nadmetanja']}.")
-        trenutna_cijena_key = 'Trenutačna cijena predmeta prodaje u\xa0nadmetanju'
         new_record = SalesInfo(
             id=data["ID nadmetanja"],
-            iznos_najvise_ponude=data.get(trenutna_cijena_key),
-            broj_uplatitelja=data.get("Trenutačni brojuplatitelja jamčevine"),
+            iznos_najvise_ponude=data.get(TRENUTNA_CIJENA_KEY),
+            broj_uplatitelja=data.get(BROJ_UPLATITELJA_KEY),
             data_hash=data_hash,
             json_data=json_data,
             url=url
@@ -181,7 +170,7 @@ def process_urls(session):
 
         except Exception as err:
             logging.error(f"Error processing URL {url}: {err}")
-            send_to_telegram(f"Error processing URL {url}: {err}. \nMaybe the case is closed?")
+            send_to_telegram(f"Error processing URL {url}: {err}")
 
 
 def main():

@@ -1,0 +1,9 @@
+.idea/
+__pycache__/
+*.pyc
+.venv/
+.env
+creds.py
+config.dev.json
+test_pickler.db
+ponip_pickle_log.txt
